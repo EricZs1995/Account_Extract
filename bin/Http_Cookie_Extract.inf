@@ -1,0 +1,9 @@
+[PLUGINFO]
+PLUGNAME=Http_Cookie_Extract
+SO_PATH=./plug/business/Http_Cookie_Extract/Http_Cookie_Extract.so
+INIT_FUNC=Http_Cookie_Extract_INIT
+DESTROY_FUNC=Http_Cookie_Extract_DESTORY
+
+[HTTP]
+FUNC_FLAG=HTTP_HOST,HTTP_COOKIE
+FUNC_NAME=Http_Cookie_Extract_Entry
