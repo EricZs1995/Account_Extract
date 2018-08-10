@@ -6,24 +6,34 @@
 #include <MESA/MESA_prof_load.h>
 #include <MESA/MESA_handle_logger.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define MAX_IP_LEN 128
 #define MAX_ACCOUNT_LEN 128
 #define MAX_HOST_LEN 128
 #define MAX_REGEX_LEN 128
 #define ITEMS_EXTRACT_NUM 3
 
-struct _http_cookie_extract_config
+typedef struct _http_cookie_extract_config
 {
 	char host_regex[MAX_REGEX_LEN];
 	char account_regex[MAX_REGEX_LEN];
 	void* runtime_log_handler;
 }HC_Conf;
 
-struct _http_cookie_extract_info
+typedef struct _http_cookie_extract_info
 {
 	char host[MAX_HOST_LEN];
-	char acount[MAX_ACCOUNT_LEN];
-	struct _socket_pairs *socket_pairs;
+	char account[MAX_ACCOUNT_LEN];
+//	struct _socket_pairs *socket_pairs;
+	unsigned char addrtype;
+	union
+	{
+			struct stream_tuple4_v4 *tuple4_v4;
+			struct stream_tuple4_v6 *tuple4_v6;
+	}
 	int already_extract[ITEMS_EXTRACT_NUM];
 }HC_Info;
 
@@ -36,7 +46,7 @@ struct _socket_pairs
 	ushort dport;
 };
 
-#ifndef _cplusplus
+#ifdef _cplusplus
 extern "C" 
 {
 #endif
@@ -46,7 +56,7 @@ void Http_Cookie_Extract_DESTORY(void);
 char Http_Cookie_Extract_Entry(stSessionInfo* session_info,  void **pme, int thread_seq,struct streaminfo *a_stream,void *a_packet);
 
 
-#ifndef _cplusplus 
+#ifdef _cplusplus 
 }
 #endif
 
