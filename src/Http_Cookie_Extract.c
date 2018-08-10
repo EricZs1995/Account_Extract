@@ -2,14 +2,14 @@
 
 #define REGEX_HOST "REGEX_HOST"
 #define REGEX_ACCOUNT "REGEX_ACCOUNT"
+#define CONF_SETTING "SETTING"
 
 HC_Conf* hc_conf ;
+
 const char* section_name = "HTTP_COOKIE_EXTRACT";
 const char* http_cookie_config_path = "../conf/http_cookie_extract.conf";
 const char* http_cookie_log_path = "../log/http_cookie_extract.log";
 const char* http_cookie_result_path = "../log/extract_result.log";
-const char* default_host_regex = "";
-const char* default_account_regex = "";
 
 enum _extract_items
 {
@@ -25,8 +25,8 @@ void Http_Cookie_Extract_INIT()
 //	hc_conf->host_regex = "";
 //	hc_conf->account_regex = "";
 	hc_conf->runtime_log_handler = NULL;
-	MESA_load_profile_string_def(http_cookie_config_path, section_name,REGEX_HOST, hc_conf->host_regex, MAX_REGEX_LEN,default_host_regex);
-	MESA_load_profile_string_def(http_cookie_config_path, section_name,REGEX_ACCOUNT, hc_conf->account_regex, MAX_REGEX_LEN, default_account_regex);
+	MESA_load_profile_string_nodef(http_cookie_config_path, CONF_SETTING,REGEX_HOST, hc_conf->host_regex, MAX_REGEX_LEN);
+	MESA_load_profile_string_nodef(http_cookie_config_path, CONF_SETTING,REGEX_ACCOUNT, hc_conf->account_regex, MAX_REGEX_LEN);
 	hc_conf->runtime_log_handler = MESA_create_runtime_log_handle(http_cookie_log_path, RLOG_LV_INFO);
 	if(NULL == hc_conf->runtime_log_handler)
 	{
