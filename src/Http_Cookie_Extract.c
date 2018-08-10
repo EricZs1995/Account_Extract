@@ -4,7 +4,17 @@
 
 #include "Http_Cookie_Extract.h"
 
-struct HC_Conf hc_conf = {"" , ""};
+#define REGEX_HOST "REGEX_HOST"
+#define REGEX_ACCOUNT "REGEX_ACCOUNT"
+
+struct HC_Conf* hc_conf = NULL;
+
+const char* section_name = "HTTP_COOKIE_EXTRACT";
+const char* http_cookie_config_path = "../conf/http_cookie_extract.conf";
+const char* http_cookie_log_path = "../log/http_cookie_extract.log";
+const char* http_cookie_result_path = "../log/extract_result.log";
+const char* default_host_regex = "";
+const char* default_account_regex = "";
 
 enum _extract_items
 {
@@ -15,12 +25,30 @@ enum _extract_items
 
 void Http_Cookie_Extract_INIT()
 {
-	
+	printf("Http_Cookie_Extract_INIT ... \n");
+	hc_conf = (HC_Conf*)malloc(sizeof(HC_Conf));
+	hc_conf->host_regex = "";
+	hc_conf->account_regex = "";
+	hc_conf->runtime_log_handler = NULL;
+	MESA_load_profile_string_def(http_cookie_config_path, section_name,REGEX_HOST, hc_conf->host_regex, MAX_REGEX_LEN,default_host_regex);
+	MESA_load_profile_string_def(http_cookie_config_path, section_name,REGEX_ACCOUNT, hc_conf->account_regex, MAX_REGEX_LEN, default_account_regex);
+	hc_conf->runtime_log_handler = MESA_create_runtime_log_handle(http_cookie_log_path, RLOG_LV_INFO);
+	if(NULL == hc_conf->runtime_log_handler)
+	{
+		printf("MESA_create_runtime_log_handle failed!!!");
+		return -1;
+	}
 }
 
 void Http_Cookie_Extract_DESTORY()
 {
-	
+	if(NULL == hc_conf)
+	{
+		return;
+	}
+	MESA_destroy_runtime_log_handle(hc_conf->runtime_log_handler);
+	free(hc_conf);
+	hc_conf = NULL;
 }
 
 int init_http_cookie_extract_info(HC_Info **pme)
@@ -63,12 +91,16 @@ void socket_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 				v4_addr_info=a_stream->addr.tuple4_v4;
 				//双指针元素使用----------???????????
 				inet_ntop(AF_INET, &(v4_addr_info->saddr), socket_pairs->sip, IP4_LEN);	
-				inet_ntop(AF_INET, &(v4_addr_info->daddr), socket_pairs->dip, IP4_LEN);		
+				inet_ntop(AF_INET, &(v4_addr_info->daddr), socket_pairs->dip, IP4_LEN);	
+				socket_pairs->sport = v4_addr_info->source;
+				socket_pairs->dport = v4_addr_info->dest;
 				break;
 			case ADDR_TYPE_IPV6:
 				v6_addr_info=a_stream->addr.tuple4_v6;
 				snprintf(socket_pairs->sip, IPV6_ADDR_LEN, "%s", v6_addr_info->saddr);
-				snprintf(socket_pairs->dip, IPV6_ADDR_LEN, "%s", v6_addr_info->daddr);	
+				snprintf(socket_pairs->dip, IPV6_ADDR_LEN, "%s", v6_addr_info->daddr);
+				socket_pairs->sport = v6_addr_info->source;
+				socket_pairs->dport = v6_addr_info->dest;
 				break;
 			default:
 				break;
@@ -88,7 +120,7 @@ int host_matching(char* buf)
 
 char* account_extract(char* buf)
 {
-
+	
 	
 	return NULL;
 }
@@ -128,7 +160,7 @@ void cookie_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 	}
 }
 
-void extract_info_print(HC_Info **pme)
+void print_http_cookie_extract(HC_Info **pme)
 {
 	if(NULL == *pme)
 	{
@@ -144,7 +176,7 @@ char Http_Cookie_Extract_Entry(stSessionInfo* session_info,  void **pme, int thr
 {
 	printf("Http_Cookie_Extract_Entry in\n");
 	//HC_info *param = (HC_info *)*pme;
-
+	MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, section_name, "Http_Cookie_Extract_Entry in ...");
 	if(NULL == session_info){
 		printf("session_info is NULL\n");
 		param = NULL;
@@ -154,7 +186,6 @@ char Http_Cookie_Extract_Entry(stSessionInfo* session_info,  void **pme, int thr
 
 	if(session_info->session_state&SESSION_STATE_PENDING)
 	{
-
 		if(0 == init_http_cookie_extract_info((HC_Info **)pme))
 		{
 			//解析结果对象 初始化失败
@@ -168,7 +199,7 @@ char Http_Cookie_Extract_Entry(stSessionInfo* session_info,  void **pme, int thr
 
 	if(session_info->session_state&SESSION_STATE_CLOSE)
 	{
-		extract_info_print((HC_Info **)pme);
+		print_http_cookie_extract((HC_Info **)pme);
 		destory_http_cookie_extract_info((HC_Info **)pme);
 		return PROT_STATE_DROPME;
 	}

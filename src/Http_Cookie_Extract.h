@@ -6,8 +6,6 @@
 #include <MESA/MESA_prof_load.h>
 #include <MESA/MESA_handle_logger.h>
 
-#define PATH_EXTRACT_CONF ""
-#define PATH_EXTRACT_LOG ""
 #define MAX_IP_LEN 128
 #define MAX_ACCOUNT_LEN 128
 #define MAX_HOST_LEN 128
@@ -18,6 +16,7 @@ struct _http_cookie_extract_config
 {
 	char host_regex[MAX_REGEX_LEN];
 	char account_regex[MAX_REGEX_LEN];
+	void* runtime_log_handler;
 }HC_Conf;
 
 struct _http_cookie_extract_info
