@@ -24,14 +24,19 @@ void Http_Cookie_Extract_INIT()
 	hc_conf = (HC_Conf*)malloc(sizeof(HC_Conf));
 //	hc_conf->host_regex = "";
 //	hc_conf->account_regex = "";
+	printf("1001 in... \n");
 	hc_conf->runtime_log_handler = NULL;
 	hc_conf->host_regex_t = NULL;
 	hc_conf->account_regex_t = NULL;
+	printf("1002 in... \n");
 	MESA_load_profile_string_nodef(http_cookie_config_path, CONF_SETTING,REGEX_HOST, hc_conf->host_regex, MAX_REGEX_LEN);
 	MESA_load_profile_string_nodef(http_cookie_config_path, CONF_SETTING,REGEX_ACCOUNT, hc_conf->account_regex, MAX_REGEX_LEN);
+	printf("1003 in... \n");
 	regcomp(hc_conf->host_regex_t, hc_conf->host_regex, REG_EXTENDED);
 	regcomp(hc_conf->account_regex_t, hc_conf->account_regex, REG_EXTENDED);
+	printf("1004 in... \n");
 	hc_conf->runtime_log_handler = MESA_create_runtime_log_handle(http_cookie_log_path, RLOG_LV_INFO);
+	printf("1005 in... \n");
 	if(NULL == hc_conf->runtime_log_handler)
 	{
 		printf("MESA_create_runtime_log_handle failed!!!");
