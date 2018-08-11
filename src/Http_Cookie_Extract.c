@@ -85,7 +85,7 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 		{
 			case ADDR_TYPE_IPV4:
 				(*pme)->addrtype = ADDR_TYPE_IPV4;
-				(*pme)->ip_addr->tuple4_v4 = a_stream->addr.tuple4_v4;
+				(*pme)->ip_addr.tuple4_v4 = a_stream->addr.tuple4_v4;
 /*				v4_addr_info=a_stream->addr.tuple4_v4;
 //				inet_ntop(AF_INET, &(v4_addr_info->saddr), socket_pairs->sip, IP4_LEN);	
 //				inet_ntop(AF_INET, &(v4_addr_info->daddr), socket_pairs->dip, IP4_LEN);	
@@ -94,7 +94,7 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 				break;
 			case ADDR_TYPE_IPV6:
 				(*pme)->addrtype = ADDR_TYPE_IPV6;
-				(*pme)->ip_addr->tuple4_v6 = a_stream->addr.tuple4_v6;
+				(*pme)->ip_addr.tuple4_v6 = a_stream->addr.tuple4_v6;
 /*				v6_addr_info=a_stream->addr.tuple4_v6;
 				snprintf(socket_pairs->sip, IPV6_ADDR_LEN, "%s", v6_addr_info->saddr);
 				snprintf(socket_pairs->dip, IPV6_ADDR_LEN, "%s", v6_addr_info->daddr);
@@ -168,8 +168,8 @@ void record_http_cookie_extract(HC_Info **pme)
 		char dip[IPV4_ADDR_P_LEN];
 		if (ADDR_TYPE_IPV4 == (*pme)->addrtype)
 		{
-			inet_ntop(AF_INET, &(((struct stream_tuple4_v4 *)((*pme)->ip_addr))->saddr), sip, IPV4_ADDR_N_LEN);
-			inet_ntop(AF_INET, &(((struct stream_tuple4_v4 *)((*pme)->ip_addr))->daddr), dip, IPV4_ADDR_N_LEN);
+			inet_ntop(AF_INET, &(((struct stream_tuple4_v4 *)((*pme)->ip_addr.tuple4_v4))->saddr), sip, IPV4_ADDR_N_LEN);
+			inet_ntop(AF_INET, &(((struct stream_tuple4_v4 *)((*pme)->ip_addr.tuple4_v4))->daddr), dip, IPV4_ADDR_N_LEN);
 			
 		}
 		else if (ADDR_TYPE_IPV6 == (*pme)->addrtype)
