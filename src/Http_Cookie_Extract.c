@@ -149,7 +149,8 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 	else if(REG_NOERROR == status)
 	{
 		char match[1024] = {0};
-		for (int i = 0; i<nm && pmatch[i].rm_so!=-1; ++i)
+		int i=0;
+		for ( i = 0; i<nm && pmatch[i].rm_so!=-1; ++i)
 			{
 			printf("-----------\n");
 			memset(match, 0, sizeof(match));
