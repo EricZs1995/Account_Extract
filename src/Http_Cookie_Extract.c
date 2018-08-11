@@ -20,7 +20,7 @@ enum _extract_items
 
 void Http_Cookie_Extract_INIT()
 {
-	printf("Http_Cookie_Extract_INIT ... \n");
+	printf("Http_Cookie_Extract_INIT in... \n");
 	hc_conf = (HC_Conf*)malloc(sizeof(HC_Conf));
 //	hc_conf->host_regex = "";
 //	hc_conf->account_regex = "";
@@ -37,6 +37,7 @@ void Http_Cookie_Extract_INIT()
 		printf("MESA_create_runtime_log_handle failed!!!");
 		return;
 	}
+	printf("Http_Cookie_Extract_INIT out... \n");
 }
 
 void Http_Cookie_Extract_DESTORY()
@@ -51,10 +52,13 @@ void Http_Cookie_Extract_DESTORY()
 	MESA_destroy_runtime_log_handle(hc_conf->runtime_log_handler);
 	free(hc_conf);
 	hc_conf = NULL;
+	printf("Http_Cookie_Extract_DESTORY out...\n");
 }
 
 int init_http_cookie_extract_info(HC_Info **pme)
 {
+	printf("init_http_cookie_extract_info in...\n");
+
 	HC_Info *hc_info = (HC_Info *)malloc(sizeof(HC_Info));
 //	hc_info->host = "";
 //	hc_info->account = "";
@@ -64,21 +68,26 @@ int init_http_cookie_extract_info(HC_Info **pme)
 	memset(((HC_Info*)pme)->already_extract, 0, ITEMS_EXTRACT_NUM);
 	*pme = hc_info;
 	//是否需要释放hc_info?????????????
+	printf("init_http_cookie_extract_info out...\n");
 	return 0;
 }
 
 void destroy_http_cookie_extract_info(HC_Info **pme)
 {
+	printf("destroy_http_cookie_extract_info in...\n");
 	if(NULL == *pme)
 	{
 		return;
 	}
 	free(*pme);
 	*pme = NULL;
+	printf("destroy_http_cookie_extract_info out...\n");
 }
 
 void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 {
+	printf("ipaddr_extract_stream in...\n");
+
 //	struct _socket_pairs* socket_pairs = (_socket_pairs *)malloc(sizeof(_socket_pairs));
 //	struct stream_tuple4_v4* v4_addr_info;
 //	struct stream_tuple4_v6* v6_addr_info;
@@ -112,10 +121,13 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 		}
 		(*pme)->already_extract[IPADDR] = 1;
 	}
+	printf("ipaddr_extract_stream out...\n");
 }
 
 int regex_matching(regex_t* reg, char* buf, char* result)
 {
+	printf("regex_matching in...\n");
+
 	int status = -1, nm = 2;
 	regmatch_t pmatch[nm];
 
@@ -135,16 +147,18 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 		memset(result, 0, sizeof(result));
 		memcpy(result, buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
 	}
+	printf("regex_matching out...\n");
 	return 1;
 }
 
 void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 {
+	printf("http_extract_session_info in...\n");
+
 	int buflen = 0;
 	char *account = NULL;
 	if (0 != (buflen = session_info->buflen))
 	{
-		//printf("buf: %s\n",session_info->buf);
 		switch(session_info->prot_flag){
 			case HTTP_HOST:
 				if(1 == ((HC_Info *)(*pme))->already_extract[HOST])
@@ -153,7 +167,6 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				}
 				if(1 == regex_matching(hc_conf->host_regex_t , session_info->buf, (*pme)->host))
 				{
-//					memcpy(((HC_Info *)(*pme))->host,session_info->buf,buflen+1);
 					((HC_Info *)(*pme))->already_extract[HOST] = 1;
 				}
 				break;
@@ -164,7 +177,6 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				}
 				if(1 == regex_matching(hc_conf->account_regex_t , session_info->buf, (*pme)->account))
 				{
-//					memcpy(((HC_Info *)(*pme))->host,account,sizeof(account)+1);
 					((HC_Info *)(*pme))->already_extract[ACCOUNT] = 1;
 				}
 				break;
@@ -172,10 +184,13 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				break;
 		}
 	}
+	printf("http_extract_session_info out...\n");
 }
 
 void record_http_cookie_extract(HC_Info **pme)
 {
+	printf("record_http_cookie_extract in...\n");
+
 	if(NULL == *pme)
 	{
 		return;
@@ -199,8 +214,9 @@ void record_http_cookie_extract(HC_Info **pme)
 			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", tuple4_v6->saddr,tuple4_v6->source,tuple4_v6->daddr,tuple4_v6->source,(*pme)->host,(*pme)->account);
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, module_name, extract_info);
 		} 
-//		printf("host: %s\naccount: %s\nsip: %s\nsport: %d\n",(*pme)->host,(*pme)->account,(*pme)->socket_pairs->sip,(*pme)->socket_pairs->sport);
+
 	}
+	printf("record_http_cookie_extract in...\n");
 }
 
 char Http_Cookie_Extract_Entry(stSessionInfo* session_info,  void **pme, int thread_seq,struct streaminfo *a_stream,void *a_packet)
