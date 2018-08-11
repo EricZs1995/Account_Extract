@@ -137,9 +137,9 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 
 	int status = -1, nm = 10;
 	regmatch_t pmatch[nm];
-
+	//printf("buf: %s\n",buf);
 	status = regexec(reg, buf, nm, pmatch, 0);
-	printf("status : \n",status);
+	printf("status : %d\n",status);
 	if (REG_NOMATCH == status)
 	{
 		
@@ -159,12 +159,12 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 			}
 		if (((sizeof(pmatch)/sizeof(regmatch_t)) < 2) || -1 == pmatch[1].rm_so)
 		{
-			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, module_name, "no matching...");
+			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, module_name, "no error...");
 			return 0;
 		}
 		memset(result, 0, sizeof(result));
 		memcpy(result, buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
-		printf("resut: %s\n",result);
+		printf("result: %s\n",result);
 	}
 	printf("regex_matching out...\n");
 	return 1;
@@ -224,18 +224,22 @@ void record_http_cookie_extract(HC_Info **pme)
 			struct stream_tuple4_v4 *tuple4_v4 = (struct stream_tuple4_v4 *)((*pme)->ip_addr.tuple4_v4);
 			inet_ntop(AF_INET, &(tuple4_v4->saddr), sip, IPV4_ADDR_N_LEN);
 			inet_ntop(AF_INET, &(tuple4_v4->daddr), dip, IPV4_ADDR_N_LEN);
+			printf( "-------------\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", sip,tuple4_v4->source,dip,tuple4_v4->source,(*pme)->host,(*pme)->account);
 			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", sip,tuple4_v4->source,dip,tuple4_v4->source,(*pme)->host,(*pme)->account);
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, module_name, extract_info);
+			printf("info； %s\n",extract_info);
 		}
 		else if (ADDR_TYPE_IPV6 == (*pme)->addrtype)
 		{
 			struct stream_tuple4_v6 *tuple4_v6 = (struct stream_tuple4_v6 *)((*pme)->ip_addr.tuple4_v6);
+			printf("------------\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", tuple4_v6->saddr,tuple4_v6->source,tuple4_v6->daddr,tuple4_v6->source,(*pme)->host,(*pme)->account);
 			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", tuple4_v6->saddr,tuple4_v6->source,tuple4_v6->daddr,tuple4_v6->source,(*pme)->host,(*pme)->account);
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, module_name, extract_info);
+			printf("info； %s\n",extract_info);
 		} 
 
 	}
-	printf("record_http_cookie_extract in...\n");
+	printf("record_http_cookie_extract out...\n");
 }
 
 char Http_Cookie_Extract_Entry(stSessionInfo* session_info,  void **pme, int thread_seq,struct streaminfo *a_stream,void *a_packet)
