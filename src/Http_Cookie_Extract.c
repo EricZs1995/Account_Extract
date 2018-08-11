@@ -114,7 +114,7 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 	}
 }
 
-int regex_matching(regex_t* reg, char* buf, char &result[])
+int regex_matching(regex_t* reg, char* buf, char* result)
 {
 	char match[];
 	int status = -1, nm = 2;
@@ -183,6 +183,7 @@ void record_http_cookie_extract(HC_Info **pme)
 	}
 	if(1 == (*pme)->already_extract[HOST] && 1 == (*pme)->already_extract[ACCOUNT] && 1 == (*pme)->already_extract[IPADDR] )
 	{
+		char extract_info[MAX_EXTRACT_INFO_LEN] = {0};
 		if (ADDR_TYPE_IPV4 == (*pme)->addrtype)
 		{		
 			char sip[IPV4_ADDR_P_LEN];
@@ -190,19 +191,15 @@ void record_http_cookie_extract(HC_Info **pme)
 			struct stream_tuple4_v4 *tuple4_v4 = (struct stream_tuple4_v4 *)((*pme)->ip_addr.tuple4_v4);
 			inet_ntop(AF_INET, &(tuple4_v4->saddr), sip, IPV4_ADDR_N_LEN);
 			inet_ntop(AF_INET, &(tuple4_v4->daddr), dip, IPV4_ADDR_N_LEN);
-			MESA_handle_runtime_log(hc_conf->runtime_log_handler
-				, RLOG_LV_INFO
-				, module_name
-				, "\n\t\t\t\tsource :\t"+sip+":"+tuple4_v4->source+"\n\t\t\t\tDestination:\t"+dip+":"+tuple4_v4->dest+"\n\t\t\t\tHost:\t"+(*pme)->host+"\n\t\t\t\tAccount:\t"+(*pme)->account);
+			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", sip,tuple4_v4->source,dip,tuple4_v4->source,(*pme)->host,(*pme)->account);
+			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, module_name, extract_info);
 		}
 		else if (ADDR_TYPE_IPV6 == (*pme)->addrtype)
 		{
 			struct stream_tuple4_v6 *tuple4_v6 = (struct stream_tuple4_v6 *)((*pme)->ip_addr.tuple4_v6);
-			MESA_handle_runtime_log(hc_conf->runtime_log_handler
-				, RLOG_LV_INFO
-				, module_name
-				, "\n\t\t\t\tsource :\t"+tuple4_v6->saddr+":"+tuple4_v6->source+"\n\t\t\t\tDestination:\t"+tuple4_v6->daddr+":"+tuple4_v6->dest+"\n\t\t\t\tHost:\t"+(*pme)->host+"\n\t\t\t\tAccount:\t"+(*pme)->account);
-		}
+			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", tuple4_v6->saddr,tuple4_v6->source,tuple4_v6->daddr,tuple4_v6->source,(*pme)->host,(*pme)->account);, sip,ntohs(tuple4_v6->source),dip,ntohs(tuple4_v6->source));
+			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, module_name, extract_info);
+		} 
 //		printf("host: %s\naccount: %s\nsip: %s\nsport: %d\n",(*pme)->host,(*pme)->account,(*pme)->socket_pairs->sip,(*pme)->socket_pairs->sport);
 	}
 }

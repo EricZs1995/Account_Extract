@@ -18,7 +18,7 @@
 #define ITEMS_EXTRACT_NUM 3
 #define IPV4_ADDR_N_LEN	(sizeof(unsigned int))
 #define IPV4_ADDR_P_LEN 16
-
+#define MAX_EXTRACT_INFO_LEN 512
 typedef struct _http_cookie_extract_config
 {
 	char host_regex[MAX_REGEX_LEN];
