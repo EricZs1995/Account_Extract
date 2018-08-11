@@ -54,7 +54,7 @@ int init_http_cookie_extract_info(HC_Info **pme)
 //	hc_info->account = "";
 
 //释放socket指针
-	hc_info->socket_pairs = NULL;
+	hc_info->ip_addr = NULL;
 	memset(((HC_Info*)pme)->already_extract, 0, ITEMS_EXTRACT_NUM);
 	*pme = hc_info;
 	//是否需要释放hc_info?????????????
@@ -85,7 +85,7 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 		{
 			case ADDR_TYPE_IPV4:
 				(*pme)->addrtype = ADDR_TYPE_IPV4;
-				(*pme).ip_addr = a_stream->addr.tuple4_v4;
+				(*pme)->ip_addr = a_stream->addr.tuple4_v4;
 /*				v4_addr_info=a_stream->addr.tuple4_v4;
 //				inet_ntop(AF_INET, &(v4_addr_info->saddr), socket_pairs->sip, IP4_LEN);	
 //				inet_ntop(AF_INET, &(v4_addr_info->daddr), socket_pairs->dip, IP4_LEN);	
@@ -94,7 +94,7 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 				break;
 			case ADDR_TYPE_IPV6:
 				(*pme)->addrtype = ADDR_TYPE_IPV6;
-				(*pme).ip_addr = a_stream->addr.tuple4_v6;
+				(*pme)->ip_addr = a_stream->addr.tuple4_v6;
 /*				v6_addr_info=a_stream->addr.tuple4_v6;
 				snprintf(socket_pairs->sip, IPV6_ADDR_LEN, "%s", v6_addr_info->saddr);
 				snprintf(socket_pairs->dip, IPV6_ADDR_LEN, "%s", v6_addr_info->daddr);
@@ -156,7 +156,7 @@ void cookie_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 	}
 }
 
-void print_http_cookie_extract(HC_Info **pme)
+void record_http_cookie_extract(HC_Info **pme)
 {
 	if(NULL == *pme)
 	{
@@ -164,6 +164,20 @@ void print_http_cookie_extract(HC_Info **pme)
 	}
 	if(1 == (*pme)->already_extract[HOST] && 1 == (*pme)->already_extract[ACCOUNT] && 1 == (*pme)->already_extract[IPADDR] )
 	{
+		char sip[IPV4_ADDR_P_LEN];
+		char dip[IPV4_ADDR_P_LEN];
+		if (ADDR_TYPE_IPV4 == (*pme)->addrtype)
+		{
+			inet_ntop(AF_INET, &((((struct stream_tuple4_v4 *)(*pme))->ip_addr)->saddr), sip, IPV4_ADDR_N_LEN);
+			inet_ntop(AF_INET, &((((struct stream_tuple4_v4 *)(*pme))->ip_addr)->daddr), dip, IPV4_ADDR_N_LEN);
+			
+		}
+		else if (ADDR_TYPE_IPV6 == (*pme)->addrtype)
+		{
+			
+		}
+
+		
 		printf("host: %s\naccount: %s\nsip: %s\nsport: %d\n",(*pme)->host,(*pme)->account,(*pme)->socket_pairs->sip,(*pme)->socket_pairs->sport);
 	}
 }
@@ -193,7 +207,7 @@ char Http_Cookie_Extract_Entry(stSessionInfo* session_info,  void **pme, int thr
 	if(session_info->session_state&SESSION_STATE_CLOSE)
 	{
 		MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, section_name, "session_state_close.");
-		print_http_cookie_extract((HC_Info **)pme);
+		record_http_cookie_extract((HC_Info **)pme);
 		destory_http_cookie_extract_info((HC_Info **)pme);
 		return PROT_STATE_DROPME;
 	}

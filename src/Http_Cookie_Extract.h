@@ -9,12 +9,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
 
 #define MAX_IP_LEN 128
 #define MAX_ACCOUNT_LEN 128
 #define MAX_HOST_LEN 128
 #define MAX_REGEX_LEN 128
 #define ITEMS_EXTRACT_NUM 3
+#define IPV4_ADDR_N_LEN	(sizeof(unsigned int))
+#define IPV4_ADDR_P_LEN 16
 
 typedef struct _http_cookie_extract_config
 {
