@@ -116,7 +116,6 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 
 int regex_matching(regex_t* reg, char* buf, char* result)
 {
-	char match[];
 	int status = -1, nm = 2;
 	regmatch_t pmatch[nm];
 
@@ -128,7 +127,7 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 	}
 	else if(REG_NOERROR == status)
 	{
-		if (NULL == pmatch[1] || -1 == pmatch[1].rm_so)
+		if (((sizeof(pmatch)/sizeof(regmatch_t)) < 2) || -1 == pmatch[1].rm_so)
 		{
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, module_name, "no matching...");
 			return 0;
@@ -197,7 +196,7 @@ void record_http_cookie_extract(HC_Info **pme)
 		else if (ADDR_TYPE_IPV6 == (*pme)->addrtype)
 		{
 			struct stream_tuple4_v6 *tuple4_v6 = (struct stream_tuple4_v6 *)((*pme)->ip_addr.tuple4_v6);
-			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", tuple4_v6->saddr,tuple4_v6->source,tuple4_v6->daddr,tuple4_v6->source,(*pme)->host,(*pme)->account);, sip,ntohs(tuple4_v6->source),dip,ntohs(tuple4_v6->source));
+			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", tuple4_v6->saddr,tuple4_v6->source,tuple4_v6->daddr,tuple4_v6->source,(*pme)->host,(*pme)->account);
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, module_name, extract_info);
 		} 
 //		printf("host: %s\naccount: %s\nsip: %s\nsport: %d\n",(*pme)->host,(*pme)->account,(*pme)->socket_pairs->sip,(*pme)->socket_pairs->sport);
