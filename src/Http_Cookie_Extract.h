@@ -23,6 +23,7 @@ typedef struct _http_cookie_extract_config
 	void* runtime_log_handler;
 }HC_Conf;
 
+
 typedef struct _http_cookie_extract_info
 {
 	char host[MAX_HOST_LEN];
@@ -46,6 +47,7 @@ struct _socket_pairs
 	ushort dport;
 };
 
+
 #ifdef _cplusplus
 extern "C" 
 {
@@ -54,7 +56,6 @@ extern "C"
 void Http_Cookie_Extract_INIT(void);
 void Http_Cookie_Extract_DESTORY(void);
 char Http_Cookie_Extract_Entry(stSessionInfo* session_info,  void **pme, int thread_seq,struct streaminfo *a_stream,void *a_packet);
-
 
 #ifdef _cplusplus 
 }
