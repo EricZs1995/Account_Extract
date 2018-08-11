@@ -23,6 +23,8 @@ typedef struct _http_cookie_extract_config
 {
 	char host_regex[MAX_REGEX_LEN];
 	char account_regex[MAX_REGEX_LEN];
+	regex_t* host_regex_t;
+	regex_t* account_regex_t;
 	void* runtime_log_handler;
 }HC_Conf;
 

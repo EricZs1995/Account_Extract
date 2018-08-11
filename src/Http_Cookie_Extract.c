@@ -6,9 +6,9 @@
 
 HC_Conf* hc_conf ;
 
-const char* section_name = "HTTP_COOKIE_EXTRACT";
-const char* http_cookie_config_path = "../conf/http_cookie_extract.conf";
-const char* http_cookie_log_path = "../log/http_cookie_extract.log";
+const char* module_name = "HTTP_COOKIE_EXTRACT";
+const char* http_cookie_config_path = "/home/zhangshuai/sapp_run/conf/http_cookie_extract.conf";
+const char* http_cookie_log_path = "/home/zhangshuai/log/http_cookie_extract.log";
 const char* http_cookie_result_path = "../log/extract_result.log";
 
 enum _extract_items
@@ -25,8 +25,12 @@ void Http_Cookie_Extract_INIT()
 //	hc_conf->host_regex = "";
 //	hc_conf->account_regex = "";
 	hc_conf->runtime_log_handler = NULL;
+	hc_conf->host_regex_t = NULL;
+	hc_conf->account_regex_t = NULL;
 	MESA_load_profile_string_nodef(http_cookie_config_path, CONF_SETTING,REGEX_HOST, hc_conf->host_regex, MAX_REGEX_LEN);
 	MESA_load_profile_string_nodef(http_cookie_config_path, CONF_SETTING,REGEX_ACCOUNT, hc_conf->account_regex, MAX_REGEX_LEN);
+	regcomp(hc_conf->host_regex_t, hc_conf->host_regex, REG_EXTENDED);
+	regcomp(hc_conf->account_regex_t, hc_conf->account_regex, REG_EXTENDED);
 	hc_conf->runtime_log_handler = MESA_create_runtime_log_handle(http_cookie_log_path, RLOG_LV_INFO);
 	if(NULL == hc_conf->runtime_log_handler)
 	{
@@ -42,6 +46,8 @@ void Http_Cookie_Extract_DESTORY()
 	{
 		return;
 	}
+	regfree(hc_conf->host_regex_t);
+	regfree(hc_conf->account_regex_t);
 	MESA_destroy_runtime_log_handle(hc_conf->runtime_log_handler);
 	free(hc_conf);
 	hc_conf = NULL;
@@ -108,19 +114,32 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 	}
 }
 
-int host_matching(char* buf)
+int regex_matching(regex_t* reg, char* buf, char &result[])
 {
-	printf("host: %s\n",buf);	
-	return 0;
+	char match[];
+	int status = -1, nm = 2;
+	regmatch_t pmatch[nm];
+
+	status = regexec(reg, buf, nm, pmatch, 0);
+	if (REG_NOMATCH == status)
+	{
+		MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, module_name, "no matching...");
+		return 0;
+	}
+	else if(REG_NOERROR == status)
+	{
+		if (NULL == pmatch[1] || -1 == pmatch[1].rm_so)
+		{
+			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, module_name, "no matching...");
+			return 0;
+		}
+		memset(result, 0, sizeof(result));
+		memcpy(result, buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
+	}
+	return 1;
 }
 
-char* account_extract(char* buf)
-{
-	printf("account: %s\n",buf);	
-	return NULL;
-}
-
-void cookie_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
+void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 {
 	int buflen = 0;
 	char *account = NULL;
@@ -133,9 +152,9 @@ void cookie_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				{
 					break;
 				}
-				if(host_matching(session_info->buf))
+				if(1 == regex_matching(hc_conf->host_regex_t , session_info->buf, (*pme)->host))
 				{
-					memcpy(((HC_Info *)(*pme))->host,session_info->buf,buflen+1);
+//					memcpy(((HC_Info *)(*pme))->host,session_info->buf,buflen+1);
 					((HC_Info *)(*pme))->already_extract[HOST] = 1;
 				}
 				break;
@@ -144,9 +163,9 @@ void cookie_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				{
 					break;
 				}
-				if(NULL != (account = account_extract(session_info->buf)))
+				if(1 == regex_matching(hc_conf->account_regex_t , session_info->buf, (*pme)->account))
 				{
-					memcpy(((HC_Info *)(*pme))->host,account,sizeof(account)+1);
+//					memcpy(((HC_Info *)(*pme))->host,account,sizeof(account)+1);
 					((HC_Info *)(*pme))->already_extract[ACCOUNT] = 1;
 				}
 				break;
@@ -164,20 +183,26 @@ void record_http_cookie_extract(HC_Info **pme)
 	}
 	if(1 == (*pme)->already_extract[HOST] && 1 == (*pme)->already_extract[ACCOUNT] && 1 == (*pme)->already_extract[IPADDR] )
 	{
-		char sip[IPV4_ADDR_P_LEN];
-		char dip[IPV4_ADDR_P_LEN];
 		if (ADDR_TYPE_IPV4 == (*pme)->addrtype)
-		{
-			inet_ntop(AF_INET, &(((struct stream_tuple4_v4 *)((*pme)->ip_addr.tuple4_v4))->saddr), sip, IPV4_ADDR_N_LEN);
-			inet_ntop(AF_INET, &(((struct stream_tuple4_v4 *)((*pme)->ip_addr.tuple4_v4))->daddr), dip, IPV4_ADDR_N_LEN);
-			
+		{		
+			char sip[IPV4_ADDR_P_LEN];
+			char dip[IPV4_ADDR_P_LEN];
+			struct stream_tuple4_v4 *tuple4_v4 = (struct stream_tuple4_v4 *)((*pme)->ip_addr.tuple4_v4);
+			inet_ntop(AF_INET, &(tuple4_v4->saddr), sip, IPV4_ADDR_N_LEN);
+			inet_ntop(AF_INET, &(tuple4_v4->daddr), dip, IPV4_ADDR_N_LEN);
+			MESA_handle_runtime_log(hc_conf->runtime_log_handler
+				, RLOG_LV_INFO
+				, module_name
+				, "\n\t\t\t\tsource :\t"+sip+":"+tuple4_v4->source+"\n\t\t\t\tDestination:\t"+dip+":"+tuple4_v4->dest+"\n\t\t\t\tHost:\t"+(*pme)->host+"\n\t\t\t\tAccount:\t"+(*pme)->account);
 		}
 		else if (ADDR_TYPE_IPV6 == (*pme)->addrtype)
 		{
-			
+			struct stream_tuple4_v6 *tuple4_v6 = (struct stream_tuple4_v6 *)((*pme)->ip_addr.tuple4_v6);
+			MESA_handle_runtime_log(hc_conf->runtime_log_handler
+				, RLOG_LV_INFO
+				, module_name
+				, "\n\t\t\t\tsource :\t"+tuple4_v6->saddr+":"+tuple4_v6->source+"\n\t\t\t\tDestination:\t"+tuple4_v6->daddr+":"+tuple4_v6->dest+"\n\t\t\t\tHost:\t"+(*pme)->host+"\n\t\t\t\tAccount:\t"+(*pme)->account);
 		}
-
-		
 //		printf("host: %s\naccount: %s\nsip: %s\nsport: %d\n",(*pme)->host,(*pme)->account,(*pme)->socket_pairs->sip,(*pme)->socket_pairs->sport);
 	}
 }
@@ -186,27 +211,27 @@ char Http_Cookie_Extract_Entry(stSessionInfo* session_info,  void **pme, int thr
 {
 	printf("Http_Cookie_Extract_Entry in......................\n");
 	if(NULL == session_info){
-		MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, section_name, "session_info is NULL.");
+		MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, module_name, "session_info is NULL.");
 		*pme = NULL;
 		return PROT_STATE_DROPME;
 	}
 	
 	if(session_info->session_state&SESSION_STATE_PENDING)
 	{
-		MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, section_name, "session_state_pending.");
+//		MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, module_name, "session_state_pending.");
 		if(0 != init_http_cookie_extract_info((HC_Info **)pme))
 		{
-			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, section_name, "http_cookie_extract initianize failed.");
+			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, module_name, "http_cookie_extract initianize failed.");
 			return PROT_STATE_DROPME;
 		}
 		ipaddr_extract_stream((HC_Info **)pme,a_stream);
 	}
 
-	cookie_extract_session_info(session_info, (HC_Info **)pme);
+	http_extract_session_info(session_info, (HC_Info **)pme);
 
 	if(session_info->session_state&SESSION_STATE_CLOSE)
 	{
-		MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, section_name, "session_state_close.");
+//		MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, module_name, "session_state_close.");
 		record_http_cookie_extract((HC_Info **)pme);
 		destory_http_cookie_extract_info((HC_Info **)pme);
 		return PROT_STATE_DROPME;
