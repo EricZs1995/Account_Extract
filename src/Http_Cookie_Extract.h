@@ -33,7 +33,7 @@ typedef struct _http_cookie_extract_info
 	{
 			struct stream_tuple4_v4 *tuple4_v4;
 			struct stream_tuple4_v6 *tuple4_v6;
-	}
+	}ip_addr;
 	int already_extract[ITEMS_EXTRACT_NUM];
 }HC_Info;
 
