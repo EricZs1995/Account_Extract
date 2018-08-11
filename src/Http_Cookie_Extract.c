@@ -106,8 +106,10 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 		switch(a_stream->addr.addrtype)
 		{
 			case ADDR_TYPE_IPV4:
+				printf("3001\n");
 				(*pme)->addrtype = ADDR_TYPE_IPV4;
 				(*pme)->ip_addr.tuple4_v4 = a_stream->addr.tuple4_v4;
+				(*pme)->already_extract[IPADDR] = 1;
 /*				v4_addr_info=a_stream->addr.tuple4_v4;
 //				inet_ntop(AF_INET, &(v4_addr_info->saddr), socket_pairs->sip, IP4_LEN);	
 //				inet_ntop(AF_INET, &(v4_addr_info->daddr), socket_pairs->dip, IP4_LEN);	
@@ -115,8 +117,10 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 				socket_pairs->dport = v4_addr_info->dest;*/
 				break;
 			case ADDR_TYPE_IPV6:
+				printf("3002\n");
 				(*pme)->addrtype = ADDR_TYPE_IPV6;
 				(*pme)->ip_addr.tuple4_v6 = a_stream->addr.tuple4_v6;
+				(*pme)->already_extract[IPADDR] = 1;
 /*				v6_addr_info=a_stream->addr.tuple4_v6;
 				snprintf(socket_pairs->sip, IPV6_ADDR_LEN, "%s", v6_addr_info->saddr);
 				snprintf(socket_pairs->dip, IPV6_ADDR_LEN, "%s", v6_addr_info->daddr);
@@ -126,7 +130,7 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 			default:
 				break;
 		}
-		(*pme)->already_extract[IPADDR] = 1;
+		
 	}
 	printf("ipaddr_extract_stream out...\n");
 }
@@ -148,6 +152,7 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 	}
 	else if(REG_NOERROR == status)
 	{
+		memset(result, 0, sizeof(result));
 		char match[1024] = {0};
 		int i=0;
 		for ( i = 0; i<nm && pmatch[i].rm_so!=-1; ++i)
@@ -155,7 +160,7 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 			printf("-----------\n");
 			memset(match, 0, sizeof(match));
 			memcpy(match, buf+pmatch[i].rm_so, pmatch[i].rm_eo-pmatch[i].rm_so);
-			printf("matching%d: %s\n",i,match);
+			printf("matching%d>>>>: %s\n----------------\n",i,match);
 			}
 		if (((sizeof(pmatch)/sizeof(regmatch_t)) < 2) || -1 == pmatch[1].rm_so)
 		{
@@ -164,7 +169,7 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 		}
 		memset(result, 0, sizeof(result));
 		memcpy(result, buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
-		printf("result: %s\n",result);
+		printf(">>>>>>>>>>>>>>\nresult: %s\n>>>>>>>>>>>>\n",result);
 	}
 	printf("regex_matching out...\n");
 	return 1;
@@ -186,6 +191,7 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				}
 				if(1 == regex_matching(hc_conf->host_regex_t , session_info->buf, (*pme)->host))
 				{
+					printf("2002\n");
 					((HC_Info *)(*pme))->already_extract[HOST] = 1;
 				}
 				break;
@@ -196,6 +202,7 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				}
 				if(1 == regex_matching(hc_conf->account_regex_t , session_info->buf, (*pme)->account))
 				{
+					printf("2002\n");
 					((HC_Info *)(*pme))->already_extract[ACCOUNT] = 1;
 				}
 				break;
