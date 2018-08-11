@@ -135,17 +135,27 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 {
 	printf("regex_matching in...\n");
 
-	int status = -1, nm = 2;
+	int status = -1, nm = 10;
 	regmatch_t pmatch[nm];
 
 	status = regexec(reg, buf, nm, pmatch, 0);
+	printf("status : \n",status);
 	if (REG_NOMATCH == status)
 	{
+		
 		MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, module_name, "no matching...");
 		return 0;
 	}
 	else if(REG_NOERROR == status)
 	{
+		char match[1024] = {0};
+		for (int i = 0; i<nm && pmatch[i].rm_so!=-1; ++i)
+			{
+			printf("-----------\n");
+			memset(match, 0, sizeof(match));
+			memcpy(match, buf+pmatch[i].rm_so, pmatch[i].rm_eo-pmatch[i].rm_so);
+			printf("matching%d: %s\n",i,match);
+			}
 		if (((sizeof(pmatch)/sizeof(regmatch_t)) < 2) || -1 == pmatch[1].rm_so)
 		{
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, module_name, "no matching...");
@@ -153,6 +163,7 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 		}
 		memset(result, 0, sizeof(result));
 		memcpy(result, buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
+		printf("resut: %s\n",result);
 	}
 	printf("regex_matching out...\n");
 	return 1;
