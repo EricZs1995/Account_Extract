@@ -176,7 +176,7 @@ int regex_matching(regex_t* reg,char* buf, char* result)
 		printf("pmatch[1].rm_eo:%d\n",pmatch[1].rm_eo);
 		memset(result, 0, sizeof(result));
 		memcpy(result, buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
-		result[buf+pmatch[1].rm_eo] = 0;
+		result[pmatch[1].rm_eo - pmatch[1].rm_so] = 0;
 		printf(">>>>>>>>>>>>>>\nresult: %s\n>>>>>>>>>>>>\n",result);
 		memset(match, 0, sizeof(match));
 		memcpy(match, buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
