@@ -72,9 +72,12 @@ int init_http_cookie_extract_info(HC_Info **pme)
 
 //释放socket指针
 //	hc_info->ip_addr = NULL;
-	memset(((HC_Info*)pme)->already_extract, 0, ITEMS_EXTRACT_NUM);
+	memset(hc_info->already_extract, 0, sizeof(hc_info->already_extract));
+	memset(hc_info->host, 0, sizeof(hc_info->host));
+	memset(hc_info->account, 0, sizeof(hc_info->account));
+
 	*pme = hc_info;
-	//是否需要释放hc_info?????????????
+	//是否需要释放?????????????
 	printf("init_http_cookie_extract_info out...\n");
 	return 0;
 }
@@ -110,6 +113,7 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 				(*pme)->addrtype = ADDR_TYPE_IPV4;
 				(*pme)->ip_addr.tuple4_v4 = a_stream->addr.tuple4_v4;
 				(*pme)->already_extract[IPADDR] = 1;
+				printf("(*pme)->already_extract[IPADDR]4 = 1;");
 /*				v4_addr_info=a_stream->addr.tuple4_v4;
 //				inet_ntop(AF_INET, &(v4_addr_info->saddr), socket_pairs->sip, IP4_LEN);	
 //				inet_ntop(AF_INET, &(v4_addr_info->daddr), socket_pairs->dip, IP4_LEN);	
@@ -121,6 +125,7 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 				(*pme)->addrtype = ADDR_TYPE_IPV6;
 				(*pme)->ip_addr.tuple4_v6 = a_stream->addr.tuple4_v6;
 				(*pme)->already_extract[IPADDR] = 1;
+				printf("(*pme)->already_extract[IPADDR]6 = 1;\n");
 /*				v6_addr_info=a_stream->addr.tuple4_v6;
 				snprintf(socket_pairs->sip, IPV6_ADDR_LEN, "%s", v6_addr_info->saddr);
 				snprintf(socket_pairs->dip, IPV6_ADDR_LEN, "%s", v6_addr_info->daddr);
@@ -191,8 +196,7 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 	if (0 != (buflen = session_info->buflen))
 	{
 		printf("buf>>>>>>>:\n%s\n--bbbbbbbbbbbbbbbbbbbbbbbb--------------\n",session_info->buf);
-		
-	
+		printf("buflen>>>>>>>>；\n%s\n----llllllllllllllllll-------------\n",session_info->buflen);
 		switch(session_info->prot_flag){
 			case HTTP_HOST:
 				if(1 == ((HC_Info *)(*pme))->already_extract[HOST])
@@ -203,6 +207,7 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				{
 					printf("2001\n");
 					((HC_Info *)(*pme))->already_extract[HOST] = 1;
+					printf("((HC_Info *)(*pme))->already_extract[HOST] = 1;\n");
 				}
 				break;
 			case HTTP_COOKIE:
@@ -213,7 +218,8 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				if(1 == regex_matching(hc_conf->account_regex_t , session_info->buf, (*pme)->account))
 				{
 					printf("2002\n");
-					((HC_Info *)(*pme))->already_extract[ACCOUNT] = 1;
+					(*pme)->already_extract[ACCOUNT] = 1;
+					printf("(*pme)->already_extract[ACCOUNT] = 1;\n");
 				}
 				break;
 			default:
