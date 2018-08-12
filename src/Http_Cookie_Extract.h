@@ -15,7 +15,7 @@
 #define MAX_ACCOUNT_LEN 128
 #define MAX_HOST_LEN 128
 #define MAX_REGEX_LEN 128
-#define ITEMS_EXTRACT_NUM 3
+#define ITEMS_EXTRACT_NUM 4
 #define IPV4_ADDR_N_LEN	(sizeof(unsigned int))
 #define IPV4_ADDR_P_LEN 16
 #define MAX_EXTRACT_INFO_LEN 512
@@ -35,12 +35,12 @@ typedef struct _http_cookie_extract_info
 	char account[MAX_ACCOUNT_LEN];
 //	struct _socket_pairs *socket_pairs;
 	unsigned char addrtype;
+	int already_extract[ITEMS_EXTRACT_NUM];
 	union
 	{
 			struct stream_tuple4_v4 *tuple4_v4;
 			struct stream_tuple4_v6 *tuple4_v6;
 	}ip_addr;
-	int already_extract[ITEMS_EXTRACT_NUM];
 }HC_Info;
 
 struct _socket_pairs

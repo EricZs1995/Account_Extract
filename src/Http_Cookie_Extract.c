@@ -75,6 +75,9 @@ int init_http_cookie_extract_info(HC_Info **pme)
 	memset(hc_info->already_extract, 0, sizeof(hc_info->already_extract));
 	memset(hc_info->host, 0, sizeof(hc_info->host));
 	memset(hc_info->account, 0, sizeof(hc_info->account));
+	printf("1(*pme)->already_extract[HOST]=%d\n",(*pme)->already_extract[HOST]);
+	printf("1(*pme)->already_extract[ACCOUNT]=%d\n",(*pme)->already_extract[ACCOUNT]);
+	printf("1(*pme)->already_extract[IPADDR]=%d\n",(*pme)->already_extract[IPADDR]);
 
 	*pme = hc_info;
 	//是否需要释放?????????????
@@ -105,7 +108,9 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 	int len = sizeof(short);
 	MESA_get_stream_opt(a_stream, MSO_STREAM_TUNNEL_TYPE, &tunnel_type, &len);
 	if(STREAM_TUNNLE_NON == tunnel_type)
-	{
+	{	printf("2(*pme)->already_extract[HOST]=%d\n",(*pme)->already_extract[HOST]);
+	printf("2(*pme)->already_extract[ACCOUNT]=%d\n",(*pme)->already_extract[ACCOUNT]);
+	printf("2(*pme)->already_extract[IPADDR]=%d\n",(*pme)->already_extract[IPADDR]);
 		switch(a_stream->addr.addrtype)
 		{
 			case ADDR_TYPE_IPV4:
@@ -135,7 +140,9 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 			default:
 				break;
 		}
-		
+			printf("3(*pme)->already_extract[HOST]=%d\n",(*pme)->already_extract[HOST]);
+	printf("3(*pme)->already_extract[ACCOUNT]=%d\n",(*pme)->already_extract[ACCOUNT]);
+	printf("3(*pme)->already_extract[IPADDR]=%d\n",(*pme)->already_extract[IPADDR]);
 	}
 	printf("ipaddr_extract_stream out...\n");
 }
@@ -194,18 +201,20 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 	printf("http_extract_session_info in...\n");
 
 	int buflen = 0;
-	char *account = NULL;
+	char *buf;
 	if (0 != (buflen = session_info->buflen))
 	{
 		printf("buf>>>>>>>:\n%s\n--bbbbbbbbbbbbbbbbbbbbbbbb--------------\n",session_info->buf);
 		printf("buflen>>>>>>>>；\n%d\n----bbbbbbbbbbbbbbbb-------------\n",buflen);
+		memcpy(buf, session_info->buf, buflen);
+		buf[buflen] = 0;
 		switch(session_info->prot_flag){
 			case HTTP_HOST:
 				if(1 == ((HC_Info *)(*pme))->already_extract[HOST])
 				{
 					break;
 				}
-				if(1 == regex_matching(hc_conf->host_regex_t , session_info->buf, (*pme)->host))
+				if(1 == regex_matching(hc_conf->host_regex_t , buf, (*pme)->host))
 				{
 					printf("2001\n");
 					((HC_Info *)(*pme))->already_extract[HOST] = 1;
@@ -217,7 +226,7 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				{
 					break;
 				}
-				if(1 == regex_matching(hc_conf->account_regex_t , session_info->buf, (*pme)->account))
+				if(1 == regex_matching(hc_conf->account_regex_t , buf, (*pme)->account))
 				{
 					printf("2002\n");
 					(*pme)->already_extract[ACCOUNT] = 1;
@@ -291,7 +300,9 @@ char Http_Cookie_Extract_Entry(stSessionInfo* session_info,  void **pme, int thr
 		}
 		ipaddr_extract_stream((HC_Info **)pme,a_stream);
 	}
-
+		printf("5(*pme)->already_extract[HOST]=%d\n",(*pme)->already_extract[HOST]);
+	printf("5(*pme)->already_extract[ACCOUNT]=%d\n",(*pme)->already_extract[ACCOUNT]);
+	printf("5(*pme)->already_extract[IPADDR]=%d\n",(*pme)->already_extract[IPADDR]);
 	http_extract_session_info(session_info, (HC_Info **)pme);
 
 	if(session_info->session_state&SESSION_STATE_CLOSE)
