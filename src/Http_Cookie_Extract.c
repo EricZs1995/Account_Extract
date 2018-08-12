@@ -113,7 +113,6 @@ int regex_matching(regex_t* reg,char* buf, char* result)
 	status = regexec(reg, buf, nm, pmatch, 0);
 	if (REG_NOMATCH == status)
 	{
-		
 		MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, ERROR_MODULE_NAME, "no matching...");
 		return 0;
 	}
@@ -193,22 +192,13 @@ void record_http_cookie_extract(HC_Info **pme)
 			struct stream_tuple4_v4 *tuple4_v4 = (struct stream_tuple4_v4 *)((*pme)->ip_addr.tuple4_v4);
 			inet_ntop(AF_INET, &(tuple4_v4->saddr), sip, sizeof(sip));
 			inet_ntop(AF_INET, &(tuple4_v4->daddr), dip, sizeof(dip));
-<<<<<<< HEAD
 			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "EXTRACT_RESULT:\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t\t%s\n\t\t\t\tAccount:\t%s", sip,ntohs(tuple4_v4->source),dip,ntohs(tuple4_v4->dest),(*pme)->host,(*pme)->account);
-=======
-			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "EXTRACT_RESULT:\n\t\t\t\tIP_tuple:%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:%s", sip,ntohs(tuple4_v4->source),dip,ntohs(tuple4_v4->dest),(*pme)->host,(*pme)->account);
->>>>>>> 7e9146677c5eb6940dadb36ce3e70ff5541d678d
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, RESULT_MODULE_NAME, extract_info);
 			}
 		else if (ADDR_TYPE_IPV6 == (*pme)->addrtype)
 		{
-			
 			struct stream_tuple4_v6 *tuple4_v6 = (struct stream_tuple4_v6 *)((*pme)->ip_addr.tuple4_v6);
-<<<<<<< HEAD
 			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "EXTRACT_RESULT:\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t\t%s\n\t\t\t\tAccount:\t%s", tuple4_v6->saddr,ntohs(tuple4_v6->source),tuple4_v6->daddr,ntohs(tuple4_v6->dest),(*pme)->host,(*pme)->account);
-=======
-			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "EXTRACT_RESULT:\n\t\t\t\tIP_tuple:%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:%s", tuple4_v6->saddr,ntohs(tuple4_v6->source),tuple4_v6->daddr,ntohs(tuple4_v6->dest),(*pme)->host,(*pme)->account);
->>>>>>> 7e9146677c5eb6940dadb36ce3e70ff5541d678d
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, RESULT_MODULE_NAME, extract_info);
 		} 
 	}
