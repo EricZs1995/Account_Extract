@@ -198,7 +198,6 @@ void record_http_cookie_extract(HC_Info **pme)
 			}
 		else if (ADDR_TYPE_IPV6 == (*pme)->addrtype)
 		{
-			
 			struct stream_tuple4_v6 *tuple4_v6 = (struct stream_tuple4_v6 *)((*pme)->ip_addr.tuple4_v6);
 			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "EXTRACT_RESULT:\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t\t%s\n\t\t\t\tAccount:\t%s", tuple4_v6->saddr,ntohs(tuple4_v6->source),tuple4_v6->daddr,ntohs(tuple4_v6->dest),(*pme)->host,(*pme)->account);
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, RESULT_MODULE_NAME, extract_info);
