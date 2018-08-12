@@ -191,7 +191,7 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				}
 				if(1 == regex_matching(hc_conf->host_regex_t , session_info->buf, (*pme)->host))
 				{
-					printf("2002\n");
+					printf("2001\n");
 					((HC_Info *)(*pme))->already_extract[HOST] = 1;
 				}
 				break;
