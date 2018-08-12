@@ -140,14 +140,14 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 	printf("ipaddr_extract_stream out...\n");
 }
 
-int regex_matching(regex_t* reg, char* buf, char* result)
+int regex_matching(regex_t* reg, stSessionInfo* session_info, char* result)
 {
 	printf("regex_matching in...\n");
 
 	int status = -1, nm = 10;
 	regmatch_t pmatch[nm];
 	//printf("buf: %s\n",buf);
-	status = regexec(reg, buf, nm, pmatch, 0);
+	status = regexec(reg, session_info->buf, nm, pmatch, 0);
 	printf("status : %d\n",status);
 	if (REG_NOMATCH == status)
 	{
@@ -164,7 +164,7 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 			{
 			printf("-----------\n");
 			memset(match, 0, sizeof(match));
-			memcpy(match, buf+pmatch[i].rm_so, pmatch[i].rm_eo-pmatch[i].rm_so);
+			memcpy(match, session_info->buf+pmatch[i].rm_so, pmatch[i].rm_eo-pmatch[i].rm_so);
 			printf("matching%d>>>>:  %s\n----------------\n",i,match);
 			}
 		if (((sizeof(pmatch)/sizeof(regmatch_t)) < 2) || -1 == pmatch[1].rm_so)
@@ -175,13 +175,19 @@ int regex_matching(regex_t* reg, char* buf, char* result)
 		printf("pmatch[1].rm_so:%d\n",pmatch[1].rm_so);
 		printf("pmatch[1].rm_eo:%d\n",pmatch[1].rm_eo);
 		memset(result, 0, sizeof(result));
-		memcpy(result, buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
+		memcpy(result, session_info->buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
 		printf(">>>>>>>>>>>>>>\nresult: %s\n>>>>>>>>>>>>\n",result);
 		memset(match, 0, sizeof(match));
-		memcpy(match, buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
+		memcpy(match, session_info->buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
 		printf("match>>>>>>>>>>>>>>:%s\n",match);
 		result = match;
 		printf(">>>>>>>>>>>>>>\nresult: %s\n>>>>>>>>>>>>\n",result);
+		memset(match, 0, sizeof(match));
+		memcpy(match, session_info->buf+pmatch[1].rm_so, session_info->buflen);
+		printf("match>>>>>>>>>>>>>>:%s\n",match);
+		result = match;
+		printf(">>>>>>>>>>>>>>\nresult: %s\n>>>>>>>>>>>>\n",result);
+		
 	}
 	printf("regex_matching out...\n");
 	return 1;
@@ -196,14 +202,14 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 	if (0 != (buflen = session_info->buflen))
 	{
 		printf("buf>>>>>>>:\n%s\n--bbbbbbbbbbbbbbbbbbbbbbbb--------------\n",session_info->buf);
-		printf("buflen>>>>>>>>；\n%s\n----llllllllllllllllll-------------\n",session_info->buflen);
+		printf("buflen>>>>>>>>；\n%d\n----llllllllllllllllll-------------\n",session_info->buflen);
 		switch(session_info->prot_flag){
 			case HTTP_HOST:
 				if(1 == ((HC_Info *)(*pme))->already_extract[HOST])
 				{
 					break;
 				}
-				if(1 == regex_matching(hc_conf->host_regex_t , session_info->buf, (*pme)->host))
+				if(1 == regex_matching(hc_conf->host_regex_t , session_info, (*pme)->host))
 				{
 					printf("2001\n");
 					((HC_Info *)(*pme))->already_extract[HOST] = 1;
@@ -215,7 +221,7 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				{
 					break;
 				}
-				if(1 == regex_matching(hc_conf->account_regex_t , session_info->buf, (*pme)->account))
+				if(1 == regex_matching(hc_conf->account_regex_t , session_info, (*pme)->account))
 				{
 					printf("2002\n");
 					(*pme)->already_extract[ACCOUNT] = 1;
