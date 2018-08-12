@@ -75,11 +75,14 @@ int init_http_cookie_extract_info(HC_Info **pme)
 	memset(hc_info->already_extract, 0, sizeof(hc_info->already_extract));
 	memset(hc_info->host, 0, sizeof(hc_info->host));
 	memset(hc_info->account, 0, sizeof(hc_info->account));
-	printf("1(*pme)->already_extract[HOST]=%d\n",(*pme)->already_extract[HOST]);
-	printf("1(*pme)->already_extract[ACCOUNT]=%d\n",(*pme)->already_extract[ACCOUNT]);
-	printf("1(*pme)->already_extract[IPADDR]=%d\n",(*pme)->already_extract[IPADDR]);
+	printf("1(*pme)->already_extract[HOST]=%d\n",hc_info->already_extract[HOST]);
+	printf("1(*pme)->already_extract[ACCOUNT]=%d\n",hc_info->already_extract[ACCOUNT]);
+	printf("1(*pme)->already_extract[IPADDR]=%d\n",hc_info->already_extract[IPADDR]);
 
 	*pme = hc_info;
+	printf("11(*pme)->already_extract[HOST]=%d\n",(*pme)->already_extract[HOST]);
+	printf("11(*pme)->already_extract[ACCOUNT]=%d\n",(*pme)->already_extract[ACCOUNT]);
+	printf("11(*pme)->already_extract[IPADDR]=%d\n",(*pme)->already_extract[IPADDR]);
 	//是否需要释放?????????????
 	printf("init_http_cookie_extract_info out...\n");
 	return 0;
@@ -300,9 +303,9 @@ char Http_Cookie_Extract_Entry(stSessionInfo* session_info,  void **pme, int thr
 		}
 		ipaddr_extract_stream((HC_Info **)pme,a_stream);
 	}
-		printf("5(*pme)->already_extract[HOST]=%d\n",(*pme)->already_extract[HOST]);
-	printf("5(*pme)->already_extract[ACCOUNT]=%d\n",(*pme)->already_extract[ACCOUNT]);
-	printf("5(*pme)->already_extract[IPADDR]=%d\n",(*pme)->already_extract[IPADDR]);
+		printf("5(*pme)->already_extract[HOST]=%d\n",((HC_Info *)(*pme))->already_extract[HOST]);
+	printf("5(*pme)->already_extract[ACCOUNT]=%d\n",((HC_Info *)(*pme))->already_extract[ACCOUNT]);
+	printf("5(*pme)->already_extract[IPADDR]=%d\n",((HC_Info *)(*pme))->already_extract[IPADDR]);
 	http_extract_session_info(session_info, (HC_Info **)pme);
 
 	if(session_info->session_state&SESSION_STATE_CLOSE)
