@@ -269,9 +269,9 @@ void record_http_cookie_extract(HC_Info **pme)
 			char sip[IPV4_ADDR_P_LEN];
 			char dip[IPV4_ADDR_P_LEN];
 			struct stream_tuple4_v4 *tuple4_v4 = (struct stream_tuple4_v4 *)((*pme)->ip_addr.tuple4_v4);
-			inet_ntop(AF_INET, &(tuple4_v4->saddr), sip, IPV4_ADDR_N_LEN);
-			inet_ntop(AF_INET, &(tuple4_v4->daddr), dip, IPV4_ADDR_N_LEN);
-			printf( "-------------\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", sip,ntohs(tuple4_v4->source),dip,ntohs(tuple4_v4->dest),(*pme)->host,(*pme)->account);
+			inet_ntop(AF_INET, &(tuple4_v4->saddr), sip, sizeof(sip));
+			inet_ntop(AF_INET, &(tuple4_v4->daddr), dip, sizeof(dip));
+			printf( "-------------\n\t\t\t\tIP_tuple:%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", sip,ntohs(tuple4_v4->source),dip,ntohs(tuple4_v4->dest),(*pme)->host,(*pme)->account);
 			snprintf(extract_info, MAX_EXTRACT_INFO_LEN, "\n\t\t\t\tIP_tuple:\t%s:%d -> %s:%d\n\t\t\t\tHost:\t%s\n\t\t\t\tAccount:\t%s", sip,ntohs(tuple4_v4->source),dip,ntohs(tuple4_v4->dest),(*pme)->host,(*pme)->account);
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, module_name, extract_info);
 			printf("info； %s\n",extract_info);
@@ -284,7 +284,7 @@ void record_http_cookie_extract(HC_Info **pme)
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_INFO, module_name, extract_info);
 			printf("info； %s\n",extract_info);
 		} 
-		pirntf("record comeout.......\n");
+		printf("record comeout.......\n");
 	}
 	printf("record_http_cookie_extract out...\n");
 }

@@ -15,7 +15,7 @@
 #define MAX_ACCOUNT_LEN 128
 #define MAX_HOST_LEN 128
 #define MAX_REGEX_LEN 128
-#define ITEMS_EXTRACT_NUM 4
+#define ITEMS_EXTRACT_NUM 3
 #define IPV4_ADDR_N_LEN	(sizeof(unsigned int))
 #define IPV4_ADDR_P_LEN 16
 #define MAX_EXTRACT_INFO_LEN 512
