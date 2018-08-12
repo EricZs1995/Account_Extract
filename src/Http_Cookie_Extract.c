@@ -204,13 +204,18 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 	printf("http_extract_session_info in...\n");
 
 	int buflen = 0;
-	char *buf;
+	char buf[10240];
 	if (0 != (buflen = session_info->buflen))
 	{
 		printf("buf>>>>>>>:\n%s\n--bbbbbbbbbbbbbbbbbbbbbbbb--------------\n",session_info->buf);
 		printf("buflen>>>>>>>>；\n%d\n----bbbbbbbbbbbbbbbb-------------\n",buflen);
+		memset(buf, 0, sizeof(buf));
+		printf("4001\n");
 		memcpy(buf, session_info->buf, buflen);
+		printf("4002\n");
 		buf[buflen] = 0;
+		printf("buf>>>>>>>:\n%s\n--bbbbbbbbbbbbbbbbbbbbbbbb--------------\n",buf);
+		printf("4003\n");
 		switch(session_info->prot_flag){
 			case HTTP_HOST:
 				if(1 == ((HC_Info *)(*pme))->already_extract[HOST])
