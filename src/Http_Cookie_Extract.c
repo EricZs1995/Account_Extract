@@ -105,7 +105,7 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 //	printf("ipaddr_extract_stream out...\n");
 }
 
-int regex_matching(regex_t* reg,char* buf, char* result, _extract_items extract_type)
+int regex_matching(regex_t* reg,char* buf, char* result, int extract_type)
 {
 //	printf("regex_matching in...\n");
 	int status = -1, nm = 2;
@@ -125,14 +125,14 @@ int regex_matching(regex_t* reg,char* buf, char* result, _extract_items extract_
 			return 0;
 		}
 		int match_len = pmatch[1].rm_eo - pmatch[1].rm_so;
-		if(HOST == extract_type){
+		if(0 == extract_type){
 			if (match_len > MAX_HOST_LEN)
 			{
 				MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, ERROR_MODULE_NAME, "HOST is too long...");
 				return 0;
 			}
 		}
-		else if(ACCOUNT == extract_type)
+		else if(1 == extract_type)
 		{
 			if (match_len > MAX_ACCOUNT_LEN)
 			{
@@ -154,10 +154,10 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 
 	int buflen = 0;
 //	char buf[10240];
-	char *buf;
 	if (0 != (buflen = session_info->buflen))
 	{
-//		memset(buf, 0, sizeof(buf));
+		char *buf = (char *)malloc(sizeof(char)*(buflen+1));
+		memset(buf, 0, sizeof(buf));
 		memcpy(buf, session_info->buf, buflen);
 		buf[buflen] = 0;
 		switch(session_info->prot_flag){
@@ -166,7 +166,7 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				{
 					break;
 				}
-				if(1 == regex_matching(hc_conf->host_regex_t , buf, (*pme)->host), HOST)
+				if(1 == regex_matching(hc_conf->host_regex_t , buf, (*pme)->host, 0))
 				{
 					(*pme)->already_extract[HOST] = 1;
 				}
@@ -176,7 +176,7 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				{
 					break;
 				}
-				if(1 == regex_matching(hc_conf->account_regex_t , buf, (*pme)->account), ACCOUNT)
+				if(1 == regex_matching(hc_conf->account_regex_t , buf, (*pme)->account, 1))
 				{
 					(*pme)->already_extract[ACCOUNT] = 1;
 				}
@@ -184,6 +184,8 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 			default:
 				break;
 		}
+		free(buf);
+		buf = NULL;
 	}
 //	printf("http_extract_session_info out...\n");
 }
