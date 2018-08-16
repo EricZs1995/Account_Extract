@@ -105,11 +105,11 @@ void ipaddr_extract_stream(HC_Info **pme , struct streaminfo *a_stream)
 //	printf("ipaddr_extract_stream out...\n");
 }
 
-int regex_matching(regex_t* reg,char* buf, char* result)
+int regex_matching(regex_t* reg,char* buf, char* result, _extract_items extract_type)
 {
 //	printf("regex_matching in...\n");
-	int status = -1, nm = 10;
-	regmatch_t pmatch[nm];
+	int status = -1, nm = 2;
+	regmatch_t pmatch[2];
 	status = regexec(reg, buf, nm, pmatch, 0);
 	if (REG_NOMATCH == status)
 	{
@@ -119,16 +119,30 @@ int regex_matching(regex_t* reg,char* buf, char* result)
 	else if(REG_NOERROR == status)
 	{
 		memset(result, 0, sizeof(result));
-		char match[1024] = {0};
-		int i=0;
 		if (((sizeof(pmatch)/sizeof(regmatch_t)) < 2) || -1 == pmatch[1].rm_so)
 		{
 			MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, ERROR_MODULE_NAME, "no error...");
 			return 0;
 		}
+		int match_len = pmatch[1].rm_eo - pmatch[1].rm_so;
+		if(HOST == extract_type){
+			if (match_len > MAX_HOST_LEN)
+			{
+				MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, ERROR_MODULE_NAME, "HOST is too long...");
+				return 0;
+			}
+		}
+		else if(ACCOUNT == extract_type)
+		{
+			if (match_len > MAX_ACCOUNT_LEN)
+			{
+				MESA_handle_runtime_log(hc_conf->runtime_log_handler, RLOG_LV_FATAL, ERROR_MODULE_NAME, "ACCOUNT is too long...");
+				return 0;
+			}
+		}
 		memset(result, 0, sizeof(result));
-		memcpy(result, buf+pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so);
-		result[pmatch[1].rm_eo - pmatch[1].rm_so] = 0;
+		memcpy(result, buf+pmatch[1].rm_so, match_len);
+		result[match_len] = 0;
 	}
 //	printf("regex_matching out...\n");
 	return 1;
@@ -139,10 +153,11 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 //	printf("http_extract_session_info in...\n");
 
 	int buflen = 0;
-	char buf[10240];
+//	char buf[10240];
+	char *buf;
 	if (0 != (buflen = session_info->buflen))
 	{
-		memset(buf, 0, sizeof(buf));
+//		memset(buf, 0, sizeof(buf));
 		memcpy(buf, session_info->buf, buflen);
 		buf[buflen] = 0;
 		switch(session_info->prot_flag){
@@ -151,9 +166,9 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				{
 					break;
 				}
-				if(1 == regex_matching(hc_conf->host_regex_t , buf, (*pme)->host))
+				if(1 == regex_matching(hc_conf->host_regex_t , buf, (*pme)->host), HOST)
 				{
-					((HC_Info *)(*pme))->already_extract[HOST] = 1;
+					(*pme)->already_extract[HOST] = 1;
 				}
 				break;
 			case HTTP_COOKIE:
@@ -161,7 +176,7 @@ void http_extract_session_info(stSessionInfo* session_info, HC_Info **pme)
 				{
 					break;
 				}
-				if(1 == regex_matching(hc_conf->account_regex_t , buf, (*pme)->account))
+				if(1 == regex_matching(hc_conf->account_regex_t , buf, (*pme)->account), ACCOUNT)
 				{
 					(*pme)->already_extract[ACCOUNT] = 1;
 				}
